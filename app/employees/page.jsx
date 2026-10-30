@@ -99,7 +99,14 @@ export default function EmployeesPage() {
           key={modal === 'new' ? 'new' : modal.id}
           employee={modal === 'new' ? null : modal}
           onClose={() => setModal(null)}
-          onSaved={(e, isNew) => { setModal(null); toast(isNew ? `Added ${e.name}` : `Updated ${e.name}`); refresh(); }}
+          onSaved={(e, isNew) => {
+            setModal(null);
+            toast(isNew ? `Added ${e.name}` : `Updated ${e.name}`);
+            setEmps((prev) => isNew
+              ? [...(prev || []), e].sort((a, b) => a.name.localeCompare(b.name))
+              : (prev || []).map((x) => x.id === e.id ? e : x)
+            );
+          }}
         />
       )}
     </>
