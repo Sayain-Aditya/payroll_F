@@ -3,9 +3,6 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
-    },
-    "jsx": "preserve",
-    "module": "esnext",
-    "moduleResolution": "bundler"
+    }
   }
 }
