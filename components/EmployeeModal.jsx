@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { X } from 'lucide-react';
+import { CheckCircle, Loader, X, XCircle } from 'lucide-react';
 import { api } from '@/lib/api';
 import { getDepts } from '@/lib/constants';
 import Select from './Select';
@@ -13,11 +13,31 @@ export default function EmployeeModal({ employee, onClose, onSaved }) {
   });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
+  const [ifscStatus, setIfscStatus] = useState(null); // null | 'checking' | 'valid' | 'invalid'
+  const [ifscBank, setIfscBank] = useState('');
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
+
+  async function verifyIfsc(code) {
+    const val = code.trim().toUpperCase();
+    if (val.length < 11) { setIfscStatus(null); setIfscBank(''); return; }
+    setIfscStatus('checking');
+    setIfscBank('');
+    try {
+      const res = await fetch(`https://ifsc.razorpay.com/${val}`);
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setIfscStatus('valid');
+      setIfscBank(`${data.BANK} — ${data.BRANCH}, ${data.CITY}`);
+    } catch {
+      setIfscStatus('invalid');
+    }
+  }
 
   async function submit(e) {
     e.preventDefault();
     if (!f.name.trim()) return setErr('Name is required');
+    if (ifscStatus === 'invalid') return setErr('IFSC code is invalid. Please correct it before saving.');
+    if (ifscStatus === 'checking') return setErr('Please wait for IFSC verification to complete.');
     setBusy(true);
     setErr('');
     try {
@@ -29,6 +49,11 @@ export default function EmployeeModal({ employee, onClose, onSaved }) {
       setBusy(false);
     }
   }
+
+  const ifscIcon = ifscStatus === 'checking' ? <Loader size={14} style={{ animation: 'spin 1s linear infinite' }} />
+    : ifscStatus === 'valid' ? <CheckCircle size={14} color="var(--green)" />
+    : ifscStatus === 'invalid' ? <XCircle size={14} color="var(--red)" />
+    : null;
 
   return (
     <div className="overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
@@ -49,7 +74,15 @@ export default function EmployeeModal({ employee, onClose, onSaved }) {
         <div className="form-grid">
           <label>Bank name<input value={f.bankName} onChange={set('bankName')} placeholder="e.g. SBI" /></label>
           <label>Account no.<input value={f.accountNo} onChange={set('accountNo')} placeholder="Account number" /></label>
-          <label>IFSC code<input value={f.ifsc} onChange={set('ifsc')} placeholder="e.g. SBIN0001234" style={{ textTransform: 'uppercase' }} /></label>
+          <label className="full">IFSC code
+            <div style={{ position: 'relative' }}>
+              <input value={f.ifsc} onChange={(e) => { set('ifsc')(e); verifyIfsc(e.target.value); }}
+                placeholder="e.g. SBIN0001234" style={{ textTransform: 'uppercase', width: '100%', paddingRight: 32 }} />
+              {ifscIcon && <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', display: 'flex' }}>{ifscIcon}</span>}
+            </div>
+            {ifscStatus === 'valid' && <div style={{ fontSize: 12, color: 'var(--green)', marginTop: 4 }}>{ifscBank}</div>}
+            {ifscStatus === 'invalid' && <div style={{ fontSize: 12, color: 'var(--red)', marginTop: 4 }}>Invalid IFSC code</div>}
+          </label>
         </div>
         {err && <div className="form-error">{err}</div>}
         <div className="modal-foot">
