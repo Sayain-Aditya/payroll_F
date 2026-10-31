@@ -1,11 +1,12 @@
 'use client';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { CalendarCheck, CalendarPlus, Lock, Plus, Search, Trash2, Unlock } from 'lucide-react';
+import { CalendarCheck, CalendarHeart, CalendarPlus, Lock, Plus, Search, Trash2, Unlock } from 'lucide-react';
 import { useApp } from '@/components/AppProvider';
 import DeptBadge from '@/components/DeptBadge';
 import EditableCell from '@/components/EditableCell';
 import Select from '@/components/Select';
-import { api } from '@/lib/api';
+import HolidayManager from '@/components/HolidayManager';
+import { api, IS_MOCK } from '@/lib/api';
 import { calcRow } from '@/lib/calc';
 import { COMPANIES, getDepts } from '@/lib/constants';
 import { fmtDate, inr, monthLabel, num } from '@/lib/format';
@@ -50,6 +51,7 @@ export default function SheetPage() {
   const [pick, setPick] = useState('');
   const [busy, setBusy] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [showHolidays, setShowHolidays] = useState(false);
 
   const load = useCallback(async () => {
     if (!month) return;
@@ -180,6 +182,11 @@ export default function SheetPage() {
           <button className="btn" disabled={syncing} onClick={syncFromDaily} title="Pull present/absent/leave counts from daily attendance marks">
             <CalendarCheck size={16} /> {syncing ? 'Syncing…' : 'Sync from daily'}
           </button>
+          {!IS_MOCK && (
+            <button className="btn" onClick={() => setShowHolidays(true)} title="Manage paid holidays for this month">
+              <CalendarHeart size={16} /> Holidays
+            </button>
+          )}
         </div>
       </div>
 
@@ -206,7 +213,7 @@ export default function SheetPage() {
           <thead>
             <tr>
               <th className="l">Sr.</th><th className="l">Name</th><th className="l">Dept.</th><th className="l">Place</th><th className="l">DOJ</th>
-              <th>CTC/Month</th><th>Day</th><th>Present</th><th>Leave</th><th>EW</th><th>CL</th><th>Absent</th>
+              <th>CTC/Month</th><th>Day</th><th>Present</th><th>Leave</th><th>EW</th><th>CL</th><th>Holiday</th><th>Absent</th>
               <th className="calc">Total Working</th><th className="calc">Day Deduction</th><th className="calc">Total Attend.</th>
               <th className="netc">Net Salary</th><th className="l">Remark</th><th />
             </tr>
@@ -215,7 +222,7 @@ export default function SheetPage() {
             {shown.map((r) => (
               <tr key={r.id}>
                 <td className="l sr">{r.srNo}</td>
-                <td className="l"><div className="nm">{r.name}</div><div className="des">{r.designation}</div></td>
+                  <td className="l"><div className="nm">{r.name}</div><div className="des">{r.designation}</div></td>
                 <td className="l"><DeptBadge dept={r.dept} /></td>
                 <td className="l place">{r.place}</td>
                 <td className="l place">
@@ -232,6 +239,7 @@ export default function SheetPage() {
                     onCommit={(v) => save(r, 'cl', v)}
                     title={r.clEligible ? '' : 'Not eligible — less than 6 months from DOJ'} />
                 </td>
+                <td className="num calc mono" title="Paid holidays — no deduction">{r.holiday ?? 0}</td>
                 {cell(r, 'absent', true)}
                 <td className="num calc mono">{num(r.totalWorking)}</td>
                 <td className={`num calc mono ${r.dayDeduction > 0 ? 'red' : ''}`}>{num(r.dayDeduction)}</td>
@@ -248,15 +256,22 @@ export default function SheetPage() {
               </tr>
             ))}
             {rows && !shown.length && (
-              <tr><td colSpan={18} className="empty">
+              <tr><td colSpan={19} className="empty">
                 {rows.length ? 'No employees match your search.' : `Nobody is on the ${monthLabel(month)} sheet yet. Use “Add all (${remaining.length})” or import an Excel file.`}
               </td></tr>
             )}
-            {!rows && <tr><td colSpan={17} className="empty">Loading…</td></tr>}
+            {!rows && <tr><td colSpan={19} className="empty">Loading…</td></tr>}
           </tbody>
         </table>
         </div>
       </div>
+      {showHolidays && (
+        <HolidayManager
+          month={month}
+          onApplied={(count, updated) => { toast(`${count} holiday${count !== 1 ? 's' : ''} applied to ${updated} row${updated !== 1 ? 's' : ''}`); load(); }}
+          onClose={() => setShowHolidays(false)}
+        />
+      )}
     </>
   );
 }

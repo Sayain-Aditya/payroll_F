@@ -8,10 +8,11 @@ import { api } from '@/lib/api';
 import { COMPANIES, getDepts } from '@/lib/constants';
 
 const STATUS = [
-  { key: 'present',  label: 'P',        title: 'Present',  color: '#15803d', bg: '#dcfce7' },
-  { key: 'absent',   label: 'A',        title: 'Absent',   color: '#dc2626', bg: '#fee2e2' },
-  { key: 'leave',    label: 'L',        title: 'Leave',    color: '#d97706', bg: '#fef3c7' },
-  { key: 'halfday',  label: 'H',        title: 'Half Day', color: '#7c3aed', bg: '#ede9fe' },
+  { key: 'present',  label: 'P', title: 'Present',  color: '#15803d', bg: '#dcfce7' },
+  { key: 'absent',   label: 'A', title: 'Absent',   color: '#dc2626', bg: '#fee2e2' },
+  { key: 'leave',    label: 'L', title: 'Leave',    color: '#d97706', bg: '#fef3c7' },
+  { key: 'halfday',  label: 'H', title: 'Half Day', color: '#7c3aed', bg: '#ede9fe' },
+  { key: 'holiday',  label: 'HO', title: 'Holiday', color: '#0369a1', bg: '#e0f2fe' },
 ];
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -87,7 +88,7 @@ export default function AttendancePage() {
   }
 
   const counts = useMemo(() => {
-    const c = { present: 0, absent: 0, leave: 0, halfday: 0, unmarked: 0 };
+    const c = { present: 0, absent: 0, leave: 0, halfday: 0, holiday: 0, unmarked: 0 };
     (rows || []).forEach((r) => r.status ? c[r.status]++ : c.unmarked++);
     return c;
   }, [rows]);

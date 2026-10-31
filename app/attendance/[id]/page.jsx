@@ -7,10 +7,11 @@ import { useApp } from '@/components/AppProvider';
 import DeptBadge from '@/components/DeptBadge';
 
 const STATUS = {
-  present: { label: 'Present',  short: 'P', color: '#16a34a', bg: '#f0fdf4', border: '#86efac', dot: '#22c55e' },
-  absent:  { label: 'Absent',   short: 'A', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', dot: '#ef4444' },
-  leave:   { label: 'Leave',    short: 'L', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', dot: '#f59e0b' },
-  halfday: { label: 'Half Day', short: 'H', color: '#7c3aed', bg: '#faf5ff', border: '#c4b5fd', dot: '#a855f7' },
+  present: { label: 'Present',  short: 'P',  color: '#16a34a', bg: '#f0fdf4', border: '#86efac', dot: '#22c55e' },
+  absent:  { label: 'Absent',   short: 'A',  color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', dot: '#ef4444' },
+  leave:   { label: 'Leave',    short: 'L',  color: '#d97706', bg: '#fffbeb', border: '#fcd34d', dot: '#f59e0b' },
+  halfday: { label: 'Half Day', short: 'H',  color: '#7c3aed', bg: '#faf5ff', border: '#c4b5fd', dot: '#a855f7' },
+  holiday: { label: 'Holiday',  short: 'HO', color: '#0369a1', bg: '#e0f2fe', border: '#7dd3fc', dot: '#0ea5e9' },
 };
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -75,7 +76,7 @@ export default function EmployeeCalendarPage() {
   const remainder = cells.length % 7;
   if (remainder) cells.push(...Array(7 - remainder).fill(null));
 
-  const counts = { present: 0, absent: 0, leave: 0, halfday: 0, unmarked: 0 };
+  const counts = { present: 0, absent: 0, leave: 0, halfday: 0, holiday: 0, unmarked: 0 };
   for (let d = 1; d <= totalDays; d++) {
     const key = `${month}-${String(d).padStart(2, '0')}`;
     const s = calendar[key];
