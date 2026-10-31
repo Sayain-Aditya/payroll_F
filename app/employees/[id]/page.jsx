@@ -3,11 +3,11 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { useApp } from '@/components/AppProvider';
-import DeptBadge from '@/components/DeptBadge';
-import { LineChart } from '@/components/charts';
+import { useApp } from '@/components/providers/AppProvider';
+import DeptBadge from '@/components/ui/DeptBadge';
+import { LineChart } from '@/components/features/charts';
 import { api } from '@/lib/api';
-import { fmtDate, inr, monthLabel, num, shortMonth } from '@/lib/format';
+import { fmtDate, inr, monthLabel, num, shortMonth } from '@/lib/utils/format';
 
 export default function EmployeeDetail() {
   const { id } = useParams();

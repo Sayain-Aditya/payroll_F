@@ -2,8 +2,8 @@
 import { useState } from 'react';
 import { CheckCircle, Loader, X, XCircle } from 'lucide-react';
 import { api } from '@/lib/api';
-import { COMPANIES, getDepts } from '@/lib/constants';
-import Select from './Select';
+import { COMPANIES, getDepts } from '@/lib/utils/constants';
+import Select from '@/components/ui/Select';
 
 export default function EmployeeModal({ employee, onClose, onSaved }) {
   const [f, setF] = useState({

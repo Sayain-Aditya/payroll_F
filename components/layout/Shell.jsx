@@ -1,9 +1,9 @@
 'use client';
 import { usePathname } from 'next/navigation';
 import { Landmark } from 'lucide-react';
-import Sidebar from './Sidebar';
-import AlertBell from './AlertBell';
-import { useApp } from './AppProvider';
+import Sidebar from '@/components/layout/Sidebar';
+import AlertBell from '@/components/features/AlertBell';
+import { useApp } from '@/components/providers/AppProvider';
 
 function MobileTopBar() {
   const { month } = useApp();

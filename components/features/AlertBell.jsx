@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertTriangle, Bell, CheckCircle2, Info, XCircle } from 'lucide-react';
 import { api, IS_MOCK } from '@/lib/api';
-import { monthLabel } from '@/lib/format';
+import { monthLabel } from '@/lib/utils/format';
 
 const ICONS = {
   error: <XCircle size={14} color="var(--red)" />,

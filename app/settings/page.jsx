@@ -1,8 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { Plus, RotateCcw, Save, Trash2 } from 'lucide-react';
-import { useApp } from '@/components/AppProvider';
-import { DEFAULTS, getSettings, saveSettings } from '@/lib/settings';
+import { useApp } from '@/components/providers/AppProvider';
+import { DEFAULTS, getSettings, saveSettings } from '@/lib/utils/settings';
 
 function Section({ title, hint, children }) {
   return (

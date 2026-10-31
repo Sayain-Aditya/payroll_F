@@ -6,11 +6,11 @@ import {
   Users, Settings, Download, FileUp, LogOut,
   Landmark, ChevronDown,
 } from 'lucide-react';
-import { useApp } from './AppProvider';
+import { useApp } from '@/components/providers/AppProvider';
 import { api, IS_MOCK } from '@/lib/api';
-import { clearToken } from '@/lib/auth';
-import { exportSheet } from '@/lib/exportSheet';
-import { monthLabel } from '@/lib/format';
+import { clearToken } from '@/lib/utils/auth';
+import { exportSheet } from '@/lib/utils/exportSheet';
+import { monthLabel } from '@/lib/utils/format';
 
 const NAV = [
   { href: '/',           label: 'Dashboard',     icon: LayoutDashboard },

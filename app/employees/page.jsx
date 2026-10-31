@@ -2,13 +2,13 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CalendarDays, History, Pencil, Plus, Search, Trash2 } from 'lucide-react';
-import { useApp } from '@/components/AppProvider';
-import DeptBadge from '@/components/DeptBadge';
-import EmployeeModal from '@/components/EmployeeModal';
-import Select from '@/components/Select';
+import { useApp } from '@/components/providers/AppProvider';
+import DeptBadge from '@/components/ui/DeptBadge';
+import EmployeeModal from '@/components/modals/EmployeeModal';
+import Select from '@/components/ui/Select';
 import { api } from '@/lib/api';
-import { COMPANIES, getDepts } from '@/lib/constants';
-import { fmtDate, inr } from '@/lib/format';
+import { COMPANIES, getDepts } from '@/lib/utils/constants';
+import { fmtDate, inr } from '@/lib/utils/format';
 
 export default function EmployeesPage() {
   const { version, refresh, toast, confirm } = useApp();

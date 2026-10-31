@@ -1,4 +1,4 @@
-import { DEPT_STYLE } from '@/lib/constants';
+import { DEPT_STYLE } from '@/lib/utils/constants';
 
 export default function DeptBadge({ dept }) {
   if (!dept) return <span className="muted">-</span>;

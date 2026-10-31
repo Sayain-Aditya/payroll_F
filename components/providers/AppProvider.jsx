@@ -3,8 +3,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { useRouter } from 'next/navigation';
 import { AlertTriangle, CheckCircle2, Trash2, XCircle } from 'lucide-react';
 import { api } from '@/lib/api';
-import { getSettings } from '@/lib/settings';
-import { currentMonth } from '@/lib/format';
+import { getSettings } from '@/lib/utils/settings';
+import { currentMonth } from '@/lib/utils/format';
 
 const Ctx = createContext(null);
 export const useApp = () => useContext(Ctx);

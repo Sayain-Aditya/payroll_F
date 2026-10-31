@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import { api } from '@/lib/api';
-import { useApp } from '@/components/AppProvider';
-import DeptBadge from '@/components/DeptBadge';
+import { useApp } from '@/components/providers/AppProvider';
+import DeptBadge from '@/components/ui/DeptBadge';
 
 const STATUS = {
   present: { label: 'Present',  short: 'P',  color: '#16a34a', bg: '#f0fdf4', border: '#86efac', dot: '#22c55e' },

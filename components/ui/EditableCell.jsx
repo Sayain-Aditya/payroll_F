@@ -1,6 +1,6 @@
 'use client';
 import { useRef, useState } from 'react';
-import { num } from '@/lib/format';
+import { num } from '@/lib/utils/format';
 
 export default function EditableCell({ value, onCommit, negative = false, min = 0, max = Infinity, disabled = false, title = '' }) {
   const [editing, setEditing] = useState(false);

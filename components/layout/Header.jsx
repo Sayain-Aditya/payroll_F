@@ -2,12 +2,12 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Download, FileUp, Landmark, LogOut, Settings } from 'lucide-react';
-import { useApp } from './AppProvider';
+import { useApp } from '@/components/providers/AppProvider';
 import { api, IS_MOCK } from '@/lib/api';
-import AlertBell from './AlertBell';
-import { clearToken } from '@/lib/auth';
-import { exportSheet } from '@/lib/exportSheet';
-import { monthLabel } from '@/lib/format';
+import AlertBell from '@/components/features/AlertBell';
+import { clearToken } from '@/lib/utils/auth';
+import { exportSheet } from '@/lib/utils/exportSheet';
+import { monthLabel } from '@/lib/utils/format';
 
 const NAV = [
   ['/', 'Dashboard'],

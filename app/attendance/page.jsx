@@ -1,11 +1,11 @@
 'use client';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Check, Save, Search } from 'lucide-react';
-import { useApp } from '@/components/AppProvider';
-import DeptBadge from '@/components/DeptBadge';
-import Select from '@/components/Select';
+import { useApp } from '@/components/providers/AppProvider';
+import DeptBadge from '@/components/ui/DeptBadge';
+import Select from '@/components/ui/Select';
 import { api } from '@/lib/api';
-import { COMPANIES, getDepts } from '@/lib/constants';
+import { COMPANIES, getDepts } from '@/lib/utils/constants';
 
 const STATUS = [
   { key: 'present',  label: 'P', title: 'Present',  color: '#15803d', bg: '#dcfce7' },

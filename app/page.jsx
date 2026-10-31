@@ -2,13 +2,13 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowRight, CalendarX2, IndianRupee, Percent, UploadCloud, Users, Wallet } from 'lucide-react';
-import { useApp } from '@/components/AppProvider';
-import DeptBadge from '@/components/DeptBadge';
-import { BarChart } from '@/components/charts';
-import AlertsCard from '@/components/AlertsCard';
+import { useApp } from '@/components/providers/AppProvider';
+import DeptBadge from '@/components/ui/DeptBadge';
+import { BarChart } from '@/components/features/charts';
+import AlertsCard from '@/components/features/AlertsCard';
 import { api } from '@/lib/api';
-import { DEPTS } from '@/lib/constants';
-import { inr, monthLabel, num } from '@/lib/format';
+import { DEPTS } from '@/lib/utils/constants';
+import { inr, monthLabel, num } from '@/lib/utils/format';
 
 const agg = (rows) => rows.reduce((s, r) => ({
   net: s.net + r.netSalary,

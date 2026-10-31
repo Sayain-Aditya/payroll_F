@@ -1,6 +1,6 @@
 import './globals.css';
-import AppProvider from '@/components/AppProvider';
-import Shell from '@/components/Shell';
+import AppProvider from '@/components/providers/AppProvider';
+import Shell from '@/components/layout/Shell';
 
 export const metadata = {
   title: 'PayrollDesk',

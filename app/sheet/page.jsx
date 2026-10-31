@@ -1,15 +1,15 @@
 'use client';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { CalendarCheck, CalendarHeart, CalendarPlus, Lock, Plus, Search, Trash2, Unlock } from 'lucide-react';
-import { useApp } from '@/components/AppProvider';
-import DeptBadge from '@/components/DeptBadge';
-import EditableCell from '@/components/EditableCell';
-import Select from '@/components/Select';
-import HolidayManager from '@/components/HolidayManager';
+import { CalendarCheck, CalendarHeart, CalendarPlus, Lock, Plus, Search, Trash2 } from 'lucide-react';
+import { useApp } from '@/components/providers/AppProvider';
+import DeptBadge from '@/components/ui/DeptBadge';
+import EditableCell from '@/components/ui/EditableCell';
+import Select from '@/components/ui/Select';
+import HolidayManager from '@/components/modals/HolidayManager';
 import { api, IS_MOCK } from '@/lib/api';
-import { calcRow } from '@/lib/calc';
-import { COMPANIES, getDepts } from '@/lib/constants';
-import { fmtDate, inr, monthLabel, num } from '@/lib/format';
+import { calcRow } from '@/lib/utils/calc';
+import { COMPANIES, getDepts } from '@/lib/utils/constants';
+import { fmtDate, inr, monthLabel, num } from '@/lib/utils/format';
 
 function RemarkCell({ r, onSave }) {
   const [editing, setEditing] = useState(false);
@@ -248,8 +248,8 @@ export default function SheetPage() {
                 <RemarkCell r={r} onSave={(v) => save(r, 'remark', v)} />
                 <td className="del">
                   {r.manualOverride
-                    ? <button className="icon-btn dark" title="Locked — sync skipped. Click to unlock." onClick={() => resetOverride(r)}><Lock size={14} style={{ color: '#f59e0b' }} /></button>
-                    : <button className="icon-btn dark" title="Click to lock — protect from daily sync" onClick={() => setOverride(r)}><Unlock size={14} /></button>
+                    ? <button className="icon-btn dark" title="Locked — click to unlock" onClick={() => resetOverride(r)}><Lock size={14} style={{ color: '#f59e0b' }} /></button>
+                    : <button className="icon-btn dark" title="Unlocked — click to lock" onClick={() => setOverride(r)}><Lock size={14} style={{ color: '#94a3b8' }} /></button>
                   }
                   <button className="icon-btn" onClick={() => remove(r)} aria-label={`Remove ${r.name}`}><Trash2 size={16} /></button>
                 </td>

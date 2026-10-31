@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { CalendarHeart, Plus, Trash2, X } from 'lucide-react';
 import { api, IS_MOCK } from '@/lib/api';
-import { monthLabel } from '@/lib/format';
+import { monthLabel } from '@/lib/utils/format';
 
 export default function HolidayManager({ month, onApplied, onClose }) {
   const [holidays, setHolidays] = useState([]);

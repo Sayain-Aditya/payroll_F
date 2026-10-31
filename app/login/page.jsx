@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Landmark, Lock } from 'lucide-react';
-import { setToken } from '@/lib/auth';
+import { setToken } from '@/lib/utils/auth';
 
 export default function LoginPage() {
   const router = useRouter();
