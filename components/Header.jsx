@@ -4,12 +4,14 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Download, FileUp, Landmark, LogOut, Settings } from 'lucide-react';
 import { useApp } from './AppProvider';
 import { api, IS_MOCK } from '@/lib/api';
+import AlertBell from './AlertBell';
 import { clearToken } from '@/lib/auth';
 import { exportSheet } from '@/lib/exportSheet';
 import { monthLabel } from '@/lib/format';
 
 const NAV = [
   ['/', 'Dashboard'],
+  ['/attendance', 'Attendance'],
   ['/sheet', 'Monthly Sheet'],
   ['/employees', 'Employees'],
   ['/settings', 'Settings'],
@@ -59,6 +61,7 @@ export default function Header() {
         <input className="month-input" type="month" value={month} onChange={(e) => e.target.value && setMonth(e.target.value)} />
         <button className="btn" onClick={openImport}><FileUp size={16} /> Import Excel</button>
         <button className="btn primary" onClick={onExport}><Download size={16} /> Export</button>
+        <AlertBell month={month} />
         <button className="btn" onClick={logout} title="Logout"><LogOut size={16} /> Logout</button>
       </div>
     </header>

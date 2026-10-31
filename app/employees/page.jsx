@@ -1,13 +1,13 @@
 'use client';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { History, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { CalendarDays, History, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { useApp } from '@/components/AppProvider';
 import DeptBadge from '@/components/DeptBadge';
 import EmployeeModal from '@/components/EmployeeModal';
 import Select from '@/components/Select';
 import { api } from '@/lib/api';
-import { getDepts } from '@/lib/constants';
+import { COMPANIES, getDepts } from '@/lib/constants';
 import { fmtDate, inr } from '@/lib/format';
 
 export default function EmployeesPage() {
@@ -15,6 +15,7 @@ export default function EmployeesPage() {
   const [emps, setEmps] = useState(null);
   const [q, setQ] = useState('');
   const [dept, setDept] = useState('');
+  const [company, setCompany] = useState('');
   const [modal, setModal] = useState(null); // null | 'new' | employee
 
   const load = useCallback(async () => {
@@ -25,8 +26,10 @@ export default function EmployeesPage() {
   const shown = useMemo(() => {
     const s = q.trim().toLowerCase();
     return (emps || []).filter((e) =>
-      (!dept || e.dept === dept) && (!s || [e.name, e.designation, e.place].some((v) => String(v || '').toLowerCase().includes(s))));
-  }, [emps, q, dept]);
+      (!dept || e.dept === dept) &&
+      (!company || e.company === company) &&
+      (!s || [e.name, e.designation, e.place, e.company].some((v) => String(v || '').toLowerCase().includes(s))));
+  }, [emps, q, dept, company]);
 
   async function remove(e) {
     const ok = await confirm({
@@ -56,6 +59,10 @@ export default function EmployeesPage() {
           <option value="">All departments</option>
           {getDepts().map((d) => <option key={d}>{d}</option>)}
         </Select>
+        <Select value={company} onChange={setCompany} className="w-dept">
+          <option value="">All companies</option>
+          {COMPANIES.map((c) => <option key={c}>{c}</option>)}
+        </Select>
       </div>
 
       <div className="table-card">
@@ -63,7 +70,7 @@ export default function EmployeesPage() {
         <table className="sheet emp-table">
           <thead>
             <tr>
-              <th className="l">Sr.</th><th className="l">Name</th><th className="l">Designation</th><th className="l">Dept.</th>
+              <th className="l">Sr.</th><th className="l">Name</th><th className="l">Company</th><th className="l">Designation</th><th className="l">Dept.</th>
               <th className="l">Place</th><th>CTC/Month</th><th className="l doj">DOJ</th><th className="l">Bank</th><th className="l">Account No.</th><th className="l">IFSC</th><th />
             </tr>
           </thead>
@@ -72,6 +79,7 @@ export default function EmployeesPage() {
               <tr key={e.id}>
                 <td className="l sr">{i + 1}</td>
                 <td className="l"><Link href={`/employees/${e.id}`} className="nm link">{e.name}</Link></td>
+                <td className="l place">{e.company || <span className="muted">—</span>}</td>
                 <td className="l place">{e.designation}</td>
                 <td className="l"><DeptBadge dept={e.dept} /></td>
                 <td className="l place">{e.place}</td>
@@ -82,13 +90,14 @@ export default function EmployeesPage() {
                 <td className="l mono">{e.ifsc || <span className="muted">—</span>}</td>
                 <td className="del">
                   <Link href={`/employees/${e.id}`} className="icon-btn dark" title="Salary history" aria-label={`Salary history of ${e.name}`}><History size={17} /></Link>
+                  <Link href={`/attendance/${e.id}`} className="icon-btn dark" title="Attendance calendar" aria-label={`Attendance calendar of ${e.name}`}><CalendarDays size={16} /></Link>
                   <button className="icon-btn dark" title="Edit" onClick={() => setModal(e)} aria-label={`Edit ${e.name}`}><Pencil size={16} /></button>
                   <button className="icon-btn dark" title="Delete" onClick={() => remove(e)} aria-label={`Delete ${e.name}`}><Trash2 size={16} /></button>
                 </td>
               </tr>
             ))}
-            {emps && !shown.length && <tr><td colSpan={11} className="empty">{emps.length ? 'No employees match your search.' : 'No employees yet. Click “Add employee” or import an Excel file.'}</td></tr>}
-            {!emps && <tr><td colSpan={11} className="empty">Loading…</td></tr>}
+            {emps && !shown.length && <tr><td colSpan={12} className="empty">{emps.length ? 'No employees match your search.' : 'No employees yet. Click “Add employee” or import an Excel file.'}</td></tr>}
+            {!emps && <tr><td colSpan={12} className="empty">Loading…</td></tr>}
           </tbody>
         </table>
         </div>

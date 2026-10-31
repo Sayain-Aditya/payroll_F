@@ -1,13 +1,44 @@
 'use client';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { CalendarPlus, Plus, Search, Trash2 } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { CalendarCheck, CalendarPlus, Lock, Plus, Search, Trash2, Unlock } from 'lucide-react';
 import { useApp } from '@/components/AppProvider';
 import DeptBadge from '@/components/DeptBadge';
 import EditableCell from '@/components/EditableCell';
 import Select from '@/components/Select';
 import { api } from '@/lib/api';
-import { getDepts } from '@/lib/constants';
+import { calcRow } from '@/lib/calc';
+import { COMPANIES, getDepts } from '@/lib/constants';
 import { fmtDate, inr, monthLabel, num } from '@/lib/format';
+
+function RemarkCell({ r, onSave }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState('');
+  const cancelled = useRef(false);
+  function start() { cancelled.current = false; setDraft(r.remark || ''); setEditing(true); }
+  async function commit() {
+    setEditing(false);
+    if (cancelled.current || draft === (r.remark || '')) return;
+    await onSave(draft);
+  }
+  if (editing) return (
+    <td className="l">
+      <input autoFocus className="ecell-text-input" value={draft} maxLength={300}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') e.currentTarget.blur();
+          if (e.key === 'Escape') { cancelled.current = true; e.currentTarget.blur(); }
+        }} />
+    </td>
+  );
+  return (
+    <td className="l">
+      <button type="button" className={`ecell-text ${r.remark ? 'filled' : ''}`} onClick={start} title={r.remark || 'Add remark'}>
+        {r.remark || <span style={{ opacity: 0.35 }}>Add…</span>}
+      </button>
+    </td>
+  );
+}
 
 export default function SheetPage() {
   const { month, version, toast, confirm } = useApp();
@@ -15,8 +46,10 @@ export default function SheetPage() {
   const [emps, setEmps] = useState([]);
   const [q, setQ] = useState('');
   const [dept, setDept] = useState('');
+  const [company, setCompany] = useState('');
   const [pick, setPick] = useState('');
   const [busy, setBusy] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   const load = useCallback(async () => {
     if (!month) return;
@@ -40,10 +73,23 @@ export default function SheetPage() {
   const shown = useMemo(() => {
     const s = q.trim().toLowerCase();
     return (rows || []).filter((r) =>
-      (!dept || r.dept === dept) && (!s || [r.name, r.designation, r.place].some((v) => String(v || '').toLowerCase().includes(s))));
-  }, [rows, q, dept]);
+      (!dept || r.dept === dept) &&
+      (!company || r.company === company) &&
+      (!s || [r.name, r.designation, r.place].some((v) => String(v || '').toLowerCase().includes(s))));
+  }, [rows, q, dept, company]);
 
   const totals = useMemo(() => shown.reduce((t, r) => ({ gross: t.gross + (Number(r.ctc) || 0), absent: t.absent + (Number(r.absent) || 0), net: t.net + r.netSalary }), { gross: 0, absent: 0, net: 0 }), [shown]);
+
+  async function syncFromDaily() {
+    setSyncing(true);
+    try {
+      const res = await api.syncMonth(month);
+      if (!res.synced) { toast('No daily attendance found for this month', 'warn'); return; }
+      toast(`Synced ${res.synced} employee${res.synced > 1 ? 's' : ''} from daily attendance`);
+      await load();
+    } catch (e) { toast(e.message, 'error'); }
+    finally { setSyncing(false); }
+  }
 
   async function add(ids) {
     setBusy(true);
@@ -61,14 +107,36 @@ export default function SheetPage() {
 
   async function save(r, field, value) {
     try {
-      // when absent is manually edited, store as absentOverride so calc knows it's manual
       const patch = field === 'absent' ? { absentOverride: value } : { [field]: value };
-      const u = await api.updateRow(r.id, patch);
-      setRows((rs) => rs.map((x) => (x.id === r.id ? { ...x, ...u } : x)));
-      toast(`${r.name}'s salary is ${inr(u.netSalary)}`);
+      const u = await api.updateRow(r.id, patch, month);
+      setRows((rs) => rs.map((x) => (x.id === r.id ? { ...x, ...u, srNo: x.srNo } : x)));
+      if (field === 'remark') toast(`Remark saved for ${r.name}`);
+      else toast(`${r.name}'s salary is ${inr(u.netSalary)}`);
     } catch (e) {
       toast(e.message, 'error');
     }
+  }
+
+  async function setOverride(r) {
+    try {
+      const u = await api.setOverride(r.id, month);
+      setRows((rs) => rs.map((x) => x.id === r.id ? { ...x, ...u, srNo: x.srNo } : x));
+      toast(`${r.name} locked — daily sync will skip this row`);
+    } catch (e) { toast(e.message, 'error'); }
+  }
+
+  async function resetOverride(r) {
+    const ok = await confirm({
+      title: 'Unlock row',
+      message: `Unlock ${r.name}'s row? The next daily sync will overwrite manual edits.`,
+      okLabel: 'Unlock',
+    });
+    if (!ok) return;
+    try {
+      const u = await api.resetOverride(r.id, month);
+      setRows((rs) => rs.map((x) => x.id === r.id ? { ...x, ...u, srNo: x.srNo } : x));
+      toast(`${r.name} unlocked — daily sync will update this row again`);
+    } catch (e) { toast(e.message, 'error'); }
   }
 
   async function remove(r) {
@@ -80,7 +148,7 @@ export default function SheetPage() {
     });
     if (!ok) return;
     try {
-      await api.deleteRow(r.id);
+      await api.deleteRow(r.id, month);
       toast(`${r.name} removed from sheet`);
       await load();
     } catch (e) {
@@ -109,6 +177,9 @@ export default function SheetPage() {
           <button className="btn primary" disabled={!remaining.length || busy} onClick={() => add(remaining.map((e) => e.id))}>
             <CalendarPlus size={16} /> Add all ({remaining.length})
           </button>
+          <button className="btn" disabled={syncing} onClick={syncFromDaily} title="Pull present/absent/leave counts from daily attendance marks">
+            <CalendarCheck size={16} /> {syncing ? 'Syncing…' : 'Sync from daily'}
+          </button>
         </div>
       </div>
 
@@ -117,6 +188,10 @@ export default function SheetPage() {
         <Select value={dept} onChange={setDept} className="w-dept">
           <option value="">All departments</option>
           {getDepts().map((d) => <option key={d}>{d}</option>)}
+        </Select>
+        <Select value={company} onChange={setCompany} className="w-dept">
+          <option value="">All companies</option>
+          {COMPANIES.map((c) => <option key={c}>{c}</option>)}
         </Select>
         <div className="sum">
           <span>Gross <b className="mono">{inr(totals.gross)}</b></span>
@@ -133,7 +208,7 @@ export default function SheetPage() {
               <th className="l">Sr.</th><th className="l">Name</th><th className="l">Dept.</th><th className="l">Place</th><th className="l">DOJ</th>
               <th>CTC/Month</th><th>Day</th><th>Present</th><th>Leave</th><th>EW</th><th>CL</th><th>Absent</th>
               <th className="calc">Total Working</th><th className="calc">Day Deduction</th><th className="calc">Total Attend.</th>
-              <th className="netc">Net Salary</th><th />
+              <th className="netc">Net Salary</th><th className="l">Remark</th><th />
             </tr>
           </thead>
           <tbody>
@@ -162,11 +237,18 @@ export default function SheetPage() {
                 <td className={`num calc mono ${r.dayDeduction > 0 ? 'red' : ''}`}>{num(r.dayDeduction)}</td>
                 <td className="num calc mono">{num(r.totalAttendance)}</td>
                 <td className="num netc mono">{inr(r.netSalary)}</td>
-                <td className="del"><button className="icon-btn" onClick={() => remove(r)} aria-label={`Remove ${r.name}`}><Trash2 size={16} /></button></td>
+                <RemarkCell r={r} onSave={(v) => save(r, 'remark', v)} />
+                <td className="del">
+                  {r.manualOverride
+                    ? <button className="icon-btn dark" title="Locked — sync skipped. Click to unlock." onClick={() => resetOverride(r)}><Lock size={14} style={{ color: '#f59e0b' }} /></button>
+                    : <button className="icon-btn dark" title="Click to lock — protect from daily sync" onClick={() => setOverride(r)}><Unlock size={14} /></button>
+                  }
+                  <button className="icon-btn" onClick={() => remove(r)} aria-label={`Remove ${r.name}`}><Trash2 size={16} /></button>
+                </td>
               </tr>
             ))}
             {rows && !shown.length && (
-              <tr><td colSpan={17} className="empty">
+              <tr><td colSpan={18} className="empty">
                 {rows.length ? 'No employees match your search.' : `Nobody is on the ${monthLabel(month)} sheet yet. Use “Add all (${remaining.length})” or import an Excel file.`}
               </td></tr>
             )}

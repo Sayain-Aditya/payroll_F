@@ -34,6 +34,39 @@ function ConfirmDialog({ opts, onOk, onCancel }) {
   );
 }
 
+function ImportMonthModal({ defaultMonth, onConfirm, onCancel }) {
+  const [m, setM] = useState(defaultMonth);
+  const [company, setCompany] = useState('');
+  const COMPANIES = ['BKT', 'Volvoline', 'Schwing Setter', 'Kubota Escorts', 'Tata Hitachi'];
+  return (
+    <div className="overlay" onMouseDown={(e) => e.target === e.currentTarget && onCancel()}>
+      <div className="modal" style={{ maxWidth: 360 }}>
+        <div className="modal-head">
+          <h3>Import Excel</h3>
+        </div>
+        <div style={{ display: 'grid', gap: 14, marginBottom: 4 }}>
+          <label style={{ display: 'grid', gap: 6, fontWeight: 500, color: '#334155' }}>
+            Month
+            <input type="month" value={m} onChange={(e) => e.target.value && setM(e.target.value)} className="month-input" style={{ width: '100%' }} />
+          </label>
+          <label style={{ display: 'grid', gap: 6, fontWeight: 500, color: '#334155' }}>
+            Company
+            <select value={company} onChange={(e) => setCompany(e.target.value)}
+              style={{ border: '1px solid var(--line)', borderRadius: 10, padding: '9px 12px', background: '#fff', fontSize: 14 }}>
+              <option value="">— Select company —</option>
+              {COMPANIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </label>
+        </div>
+        <div className="modal-foot">
+          <button className="btn" onClick={onCancel}>Cancel</button>
+          <button className="btn primary" onClick={() => onConfirm(m, company)} disabled={!m || !company}>Upload Excel</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ImportingModal({ show }) {
   if (!show) return null;
   return (
@@ -63,6 +96,9 @@ export default function AppProvider({ children }) {
   const [toasts, setToasts] = useState([]);
   const [confirmOpts, setConfirmOpts] = useState(null);
   const [importing, setImporting] = useState(false);
+  const [importMonth, setImportMonth] = useState(null);
+  const pendingMonth = useRef('');
+  const pendingCompany = useRef('');
   const confirmResolve = useRef(null);
 
   useEffect(() => {
@@ -93,15 +129,25 @@ export default function AppProvider({ children }) {
   const handleOk = () => { setConfirmOpts(null); confirmResolve.current?.(true); };
   const handleCancel = () => { setConfirmOpts(null); confirmResolve.current?.(false); };
 
-  const openImport = useCallback(() => fileRef.current?.click(), []);
+  const openImport = useCallback(() => setImportMonth(month), [month]);
+
+  function onImportMonthConfirm(m, company) {
+    pendingMonth.current = m;
+    pendingCompany.current = company || '';
+    setImportMonth(null);
+    fileRef.current?.click();
+  }
 
   async function onFile(e) {
     const file = e.target.files?.[0];
     e.target.value = '';
-    if (!file || !month) return;
+    if (!file) return;
+    const m = pendingMonth.current || month;
+    const company = pendingCompany.current || '';
+    if (!m) return;
     setImporting(true);
     try {
-      const r = await api.importExcel(file, month);
+      const r = await api.importExcel(file, m, company);
       toast(`Imported ${r.total} employees · ${r.created} new, ${r.updated} updated`);
       if (r.warnings?.length) toast(`${r.warnings.length} warning(s): ${r.warnings[0]}`, 'warn');
       refresh();
@@ -120,6 +166,7 @@ export default function AppProvider({ children }) {
     <Ctx.Provider value={value}>
       {children}
       <input ref={fileRef} type="file" accept=".xlsx,.xls" hidden onChange={onFile} />
+      {importMonth !== null && <ImportMonthModal defaultMonth={importMonth} onConfirm={onImportMonthConfirm} onCancel={() => setImportMonth(null)} />}
       <ImportingModal show={importing} />
       <div className="toasts">
         {toasts.map((t) => {

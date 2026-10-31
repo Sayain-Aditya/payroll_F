@@ -5,6 +5,7 @@ import { ArrowRight, CalendarX2, IndianRupee, Percent, UploadCloud, Users, Walle
 import { useApp } from '@/components/AppProvider';
 import DeptBadge from '@/components/DeptBadge';
 import { BarChart } from '@/components/charts';
+import AlertsCard from '@/components/AlertsCard';
 import { api } from '@/lib/api';
 import { DEPTS } from '@/lib/constants';
 import { inr, monthLabel, num } from '@/lib/format';
@@ -84,6 +85,49 @@ export default function Dashboard() {
   , [rows]);
 
   const maxAbsent = topAbsent[0] ? (Number(topAbsent[0].absent) || 0) : 1;
+  const loading = rows === null;
+
+  if (loading) return (
+    <>
+      <div className="page-head">
+        <div>
+          <div className="eyebrow">Payroll overview</div>
+          <h1 className="h1">{monthLabel(month)}</h1>
+          <p className="sub"><span className="skel" style={{ width: 260 }} /></p>
+        </div>
+        <Link href="/sheet" className="link-btn">Open monthly sheet <ArrowRight size={16} /></Link>
+      </div>
+
+      <div className="stats">
+        {[...Array(5)].map((_, i) => (
+          <div key={i} className="stat">
+            <div className="stat-top"><span className="skel" style={{ width: 90 }} /><span className="skel" style={{ width: 16, height: 16, borderRadius: 4 }} /></div>
+            <div className="skel" style={{ width: 120, height: 32, marginTop: 14, borderRadius: 8 }} />
+          </div>
+        ))}
+      </div>
+
+      <h2 className="h2">Departments</h2>
+      <div className="dept-grid">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="card dept-card">
+            <div className="dept-top"><span className="skel" style={{ width: 70, height: 22, borderRadius: 999 }} /><span className="skel" style={{ width: 40 }} /></div>
+            <div className="skel" style={{ width: 60, height: 11, marginBottom: 6 }} />
+            <div className="skel" style={{ width: 130, height: 28, marginBottom: 16, borderRadius: 8 }} />
+            <div style={{ display: 'grid', gap: 10 }}>
+              {[...Array(3)].map((_, j) => <div key={j} className="skel" style={{ width: '100%', height: 14 }} />)}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="dash-bottom" style={{ gridTemplateColumns: '1.4fr 1fr 0.9fr' }}>
+        <div className="card"><div className="skel" style={{ width: 200, height: 20, marginBottom: 16 }} /><div className="skel" style={{ width: '100%', height: 180, borderRadius: 10 }} /></div>
+        <div className="card"><div className="skel" style={{ width: 120, height: 20, marginBottom: 16 }} />{[...Array(5)].map((_, i) => <div key={i} className="skel" style={{ width: '100%', height: 36, marginBottom: 8, borderRadius: 8 }} />)}</div>
+        <div className="card how"><div className="skel" style={{ width: 160, height: 20, marginBottom: 14 }} />{[...Array(6)].map((_, i) => <div key={i} className="skel skel-light" style={{ width: '100%', height: 14, marginBottom: 10 }} />)}</div>
+      </div>
+    </>
+  );
 
   return (
     <>
@@ -125,6 +169,8 @@ export default function Dashboard() {
           ))}
         </div>
       )}
+
+      <AlertsCard month={month} />
 
       <div className="dash-bottom" style={{ gridTemplateColumns: '1.4fr 1fr 0.9fr' }}>
         <div className="card anim" style={{ animationDelay: `${380 + depts.length * 60 + 60}ms` }}>

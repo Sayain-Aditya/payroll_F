@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { CheckCircle, Loader, X, XCircle } from 'lucide-react';
 import { api } from '@/lib/api';
-import { getDepts } from '@/lib/constants';
+import { COMPANIES, getDepts } from '@/lib/constants';
 import Select from './Select';
 
 export default function EmployeeModal({ employee, onClose, onSaved }) {
@@ -10,6 +10,7 @@ export default function EmployeeModal({ employee, onClose, onSaved }) {
     name: employee?.name || '', designation: employee?.designation || '', dept: employee?.dept || 'Sales',
     place: employee?.place || '', ctc: employee?.ctc ?? '', doj: employee?.doj || '',
     bankName: employee?.bankName || '', accountNo: employee?.accountNo || '', ifsc: employee?.ifsc || '',
+    company: employee?.company || '',
   });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
@@ -57,7 +58,7 @@ export default function EmployeeModal({ employee, onClose, onSaved }) {
 
   return (
     <div className="overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <form className="modal" onSubmit={submit}>
+      <form className="modal" onSubmit={submit} style={{ maxHeight: '90vh', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
         <div className="modal-head">
           <h3>{employee ? 'Edit employee' : 'Add employee'}</h3>
           <button type="button" className="icon-btn" onClick={onClose} aria-label="Close"><X size={18} /></button>
@@ -69,6 +70,13 @@ export default function EmployeeModal({ employee, onClose, onSaved }) {
           <label>Place<input value={f.place} onChange={set('place')} placeholder="City" /></label>
           <label>CTC / month (₹)<input type="number" min="0" value={f.ctc} onChange={set('ctc')} placeholder="0" /></label>
           <label className="full">Date of joining<input type="date" value={f.doj} onChange={set('doj')} /></label>
+          <label className="full">Company
+            <select value={f.company} onChange={(e) => setF({ ...f, company: e.target.value })}
+              style={{ border: '1px solid var(--line)', borderRadius: 10, padding: '9px 12px', background: '#fff' }}>
+              <option value="">— Select company —</option>
+              {COMPANIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </label>
         </div>
         <div style={{ borderTop: '1px solid var(--line)', margin: '12px 0 4px', paddingTop: 12, fontWeight: 600, fontSize: 13, color: 'var(--muted)', letterSpacing: '.04em' }}>BANK DETAILS</div>
         <div className="form-grid">
@@ -85,7 +93,7 @@ export default function EmployeeModal({ employee, onClose, onSaved }) {
           </label>
         </div>
         {err && <div className="form-error">{err}</div>}
-        <div className="modal-foot">
+        <div className="modal-foot" style={{ position: 'sticky', bottom: 0, background: '#fff', paddingTop: 12, marginTop: 8 }}>
           <button type="button" className="btn" onClick={onClose}>Cancel</button>
           <button className="btn primary" disabled={busy}>{busy ? 'Saving...' : employee ? 'Save changes' : 'Add employee'}</button>
         </div>
